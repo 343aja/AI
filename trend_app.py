@@ -20,7 +20,7 @@ data['Trend_Score'] = (
 )
 
 # Sidebar bo‘limlarini yaratish
-tabs = st.sidebar.radio("Bo‘limlar", ('Trend Score Bashorati', 'Hashtaglar va Platformalar', 'KMeans Guruhlar', 'Mintaqa va Hashtag Ko‘rishlar'))
+tabs = st.sidebar.radio("Bo‘limlar", ('Trend Score Bashorati', 'Hashtaglar va Platformalar', 'KMeans Guruhlar', 'Mintaqa va Hashtag Ko‘rishlar','Dataset'))
 
 # === Trend Score Bashorati ===
 if tabs == 'Trend Score Bashorati':
@@ -76,29 +76,29 @@ elif tabs == 'Hashtaglar va Platformalar':
     st.pyplot(fig)
 
 # === KMeans Guruhlar ===
-elif tabs == 'KMeans Guruhlar':
-    st.subheader("📊 KMeans Guruhlar Bo‘yicha O‘rtacha Atributlar")
+# elif tabs == 'KMeans Guruhlar':
+#     st.subheader("📊 KMeans Guruhlar Bo‘yicha O‘rtacha Atributlar")
 
-    # Features tanlash (Likes, Shares, Comments, Views)
-    features = data[['Likes', 'Shares', 'Comments', 'Views']].fillna(0)
+#     # Features tanlash (Likes, Shares, Comments, Views)
+#     features = data[['Likes', 'Shares', 'Comments', 'Views']].fillna(0)
 
-    # KMeans modelini yaratish (5 ta guruh)
-    kmeans = KMeans(n_clusters=5, random_state=42)
-    data['Cluster'] = kmeans.fit_predict(features)
+#     # KMeans modelini yaratish (5 ta guruh)
+#     kmeans = KMeans(n_clusters=5, random_state=42)
+#     data['Cluster'] = kmeans.fit_predict(features)
 
-    # KMeans guruhlar bo‘yicha o‘rtacha qiymatlarni hisoblash
-    cluster_means = data.groupby('Cluster')[['Likes', 'Shares', 'Comments', 'Views']].mean()
+#     # KMeans guruhlar bo‘yicha o‘rtacha qiymatlarni hisoblash
+#     cluster_means = data.groupby('Cluster')[['Likes', 'Shares', 'Comments', 'Views']].mean()
 
-    # Bar chart chizish
-    fig, ax = plt.subplots(figsize=(8, 5))
-    cluster_means.plot(kind='bar', ax=ax, color=['#FE7331', '#344054', '#6C757D', '#D6D9E0'])
+#     # Bar chart chizish
+#     fig, ax = plt.subplots(figsize=(8, 5))
+#     cluster_means.plot(kind='bar', ax=ax, color=['#FE7331', '#344054', '#6C757D', '#D6D9E0'])
 
-    plt.title('KMeans Guruhlar Bo‘yicha O‘rtacha Atributlar')
-    plt.xlabel('Cluster')
-    plt.ylabel('O‘rtacha Qiymat')
-    plt.xticks(rotation=0)
+#     plt.title('KMeans Guruhlar Bo‘yicha O‘rtacha Atributlar')
+#     plt.xlabel('Cluster')
+#     plt.ylabel('O‘rtacha Qiymat')
+#     plt.xticks(rotation=0)
 
-    st.pyplot(fig)
+#     st.pyplot(fig)
 
 # === Mintaqa va Hashtag Ko‘rishlar ===
 elif tabs == 'Mintaqa va Hashtag Ko‘rishlar':
@@ -120,3 +120,43 @@ elif tabs == 'Mintaqa va Hashtag Ko‘rishlar':
     plt.xlabel('Hashtag')
     plt.ylabel('Mintaqa')
     st.pyplot(fig)
+
+
+elif tabs == 'Dataset':
+    st.subheader("📊 Dataset")
+    st.write(data.head())
+    
+
+# === KMeans Guruhlar ===
+elif tabs == 'KMeans Guruhlar':
+    st.subheader("📊 KMeans Guruhlar Bo‘yicha O‘rtacha Atributlar")
+
+    # Guruhlar sonini tanlash uchun slider
+    n_clusters = st.slider("Guruhlar soni (K)", min_value=2, max_value=10, value=5, step=1)
+
+    # Features tanlash (Likes, Shares, Comments, Views)
+    features = data[['Likes', 'Shares', 'Comments', 'Views']].fillna(0)
+
+    # KMeans modelini yaratish
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    data['Cluster'] = kmeans.fit_predict(features)
+
+    # KMeans guruhlar bo‘yicha o‘rtacha qiymatlarni hisoblash
+    cluster_means = data.groupby('Cluster')[['Likes', 'Shares', 'Comments', 'Views']].mean()
+
+    # Bar chart chizish
+    fig, ax = plt.subplots(figsize=(8, 5))
+    cluster_means.plot(kind='bar', ax=ax, color=['#FE7331', '#344054', '#6C757D', '#D6D9E0'])
+
+    plt.title(f'KMeans ({n_clusters} Guruh) Bo‘yicha O‘rtacha Atributlar')
+    plt.xlabel('Cluster')
+    plt.ylabel('O‘rtacha Qiymat')
+    plt.xticks(rotation=0)
+
+    # Vizualni ko‘rsatish
+    st.pyplot(fig)
+
+    # Guruhdagi postlar sonini ko‘rsatish
+    st.subheader("📊 Guruhlar bo‘yicha postlar soni")
+    cluster_counts = data['Cluster'].value_counts().sort_index()
+    st.bar_chart(cluster_counts)
